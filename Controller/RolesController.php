@@ -22,7 +22,6 @@ class RolesController extends AppController {
         $this->paginate = array(
             'Role' => array(
                 'recursive' => -1,
-                //'contain' => array('User'),
             )
         );
         $roles = $this->paginate('Role');
@@ -37,12 +36,12 @@ class RolesController extends AppController {
         $this->set(compact('roles'));
     }
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
+    /**
+     * view method
+     *
+     * @param string $id
+     * @return void
+     */
 	public function admin_view($id = null) {
 		$this->Role->id = $id;
 		if (!$this->Role->exists()) {
@@ -51,11 +50,11 @@ class RolesController extends AppController {
 		$this->set('role', $this->Role->read(null, $id));
 	}
 
-/**
- * add method
- *
- * @return void
- */
+    /**
+     * add method
+     *
+     * @return void
+     */
 	public function admin_add() {
 		if ($this->request->is('post')) {
 			$this->Role->create();
@@ -68,12 +67,12 @@ class RolesController extends AppController {
 		}
 	}
 
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
+    /**
+     * edit method
+     *
+     * @param string $id
+     * @return void
+     */
 	public function admin_edit($id = null) {
 		$this->Role->id = $id;
 		if (!$this->Role->exists()) {
@@ -91,12 +90,12 @@ class RolesController extends AppController {
 		}
 	}
 
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
+    /**
+     * delete method
+     *
+     * @param string $id
+     * @return void
+     */
 	public function admin_delete($id = null) {
         throw new MethodNotAllowedException();
 		if (!$this->request->is('post')) {

@@ -278,4 +278,15 @@ class UsersController extends AppController {
 		$this->Session->setFlash(__('Good bye!'),'Flash/info');
 		$this->redirect($this->Auth->logout());
 	}
+
+    /**
+     * admin_change_password method
+     *
+     * @return void
+     */
+    public function admin_change_password() {
+        // @todo: to be implemented
+        // @todo: ask for current password and new password twice
+        throw new MethodNotAllowedException();
+    }
 }
