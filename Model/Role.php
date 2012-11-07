@@ -3,7 +3,7 @@ App::uses('AppModel', 'Model');
 /**
  * Role Model
  *
- * @property Role $Role
+ * @property User $User
  */
 class Role extends AppModel {
 
