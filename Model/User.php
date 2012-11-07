@@ -149,7 +149,7 @@ class User extends AppModel {
      *
      * @return void
      */
-    public function beforeSave() {
+    public function beforeSave($options = array()) {
         $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
 		$this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
         return true;
