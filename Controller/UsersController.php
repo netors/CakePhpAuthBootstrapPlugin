@@ -99,36 +99,6 @@ class UsersController extends AuthBootstrapAppController {
         $this->set('admin', $this->User->read(null, $id));
     }
 
-    /**
-     * changepassword method
-     *
-     * @return void
-     */
-    public function admin_changepassword() {
-    	$password = $this->User->find('all');
-			debug($password);
-        if ($this->request->is('post')) {
-        	debug($this->data);
-			
-			
-			if (false) {
-				if($this->data['Admin']['new_password'] === $this->data['Admin']['repeat_password']){
-					if ($this->Session->read('Auth.User.is_active')) {
-	                    $this->redirect($this->Auth->redirect());
-	                } else {
-	                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
-	                    $this->redirect($this->Auth->logout());
-	                }
-				}
-				else{
-					$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
-				}
-			} else {
-				$this->Session->setFlash(__('Your password was incorrect.'),'Flash/error');
-			}
-		}
-    }
-
 	/**
 	 * index method
 	 *
@@ -316,6 +286,31 @@ class UsersController extends AuthBootstrapAppController {
     public function admin_change_password() {
         // @todo: to be implemented
         // @todo: ask for current password and new password twice
-        throw new MethodNotAllowedException();
+        $this->User->recursive = -1;
+    	$password = $this->User->find('first',array('conditions'=>array('User.id'=>$this->Session->read('Auth.User.id'))));
+		debug(AuthComponent::password($password['User']['password']));
+		debug(PhpassFormAuthenticate::hash($this->data['Admin']['current_password']));
+		debug('Original Password:'.$password['User']['password']);
+			debug($password['User']['password'] === PhpassFormAuthenticate::hash($this->data['Admin']['current_password']));
+        if ($this->request->is('post')) {
+        	debug($this->data);
+			
+			
+			if (false) {
+				if($this->data['Admin']['new_password'] === $this->data['Admin']['repeat_password']){
+					if ($this->Session->read('Auth.User.is_active')) {
+	                    $this->redirect($this->Auth->redirect());
+	                } else {
+	                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
+	                    $this->redirect($this->Auth->logout());
+	                }
+				}
+				else{
+					$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
+				}
+			} else {
+				$this->Session->setFlash(__('Your password was incorrect.'),'Flash/error');
+			}
+		}
     }
 }
