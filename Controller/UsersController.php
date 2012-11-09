@@ -286,20 +286,20 @@ class UsersController extends AuthBootstrapAppController {
     public function admin_change_password() {
         // @todo: to be implemented
         // @todo: ask for current password and new password twice
-        $this->User->recursive = -1;
-    	$password = $this->User->find('first',array('conditions'=>array('User.id'=>$this->Session->read('Auth.User.id'))));
-		debug(AuthComponent::password($password['User']['password']));
-		debug(PhpassFormAuthenticate::hash($this->data['Admin']['current_password']));
-		debug('Original Password:'.$password['User']['password']);
-			debug($password['User']['password'] === PhpassFormAuthenticate::hash($this->data['Admin']['current_password']));
         if ($this->request->is('post')) {
-        	debug($this->data);
-			
-			
-			if (false) {
+			$this->User->recursive = -1;
+    		$password = $this->User->find('first',array('conditions'=>array('User.id'=>$this->Session->read('Auth.User.id'))));
+			if (PhpassFormAuthenticate::CheckPassword($this->data['Admin']['current_password'],$password['User']['password'])) {
 				if($this->data['Admin']['new_password'] === $this->data['Admin']['repeat_password']){
 					if ($this->Session->read('Auth.User.is_active')) {
-	                    $this->redirect($this->Auth->redirect());
+						$this->User->read(null, $this->Session->read('Auth.User.id'));
+						$this->User->set('password', $this->data['Admin']['new_password']);
+						
+						if($this->User->save()){
+							$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
+						}else{
+							$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
+						}
 	                } else {
 	                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
 	                    $this->redirect($this->Auth->logout());
