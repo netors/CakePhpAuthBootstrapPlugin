@@ -1,12 +1,14 @@
 <?php
-App::uses('AppModel', 'Model');
+App::uses('AuthBootstrapAppModel', 'AuthBootstrap.Model');
+App::uses('PasswordHash', 'Vendor');
+App::uses('PhpassFormAuthenticate', 'Controller/Component/Auth');
 App::uses('AuthComponent', 'Controller/Component');
 /**
  * User Model
  *
  * @property Role $Role
  */
-class User extends AppModel {
+class User extends AuthBootstrapAppModel {
 
     /**
      * Model Behaviors
@@ -142,18 +144,22 @@ class User extends AppModel {
 	);
 
     /**
-     * beforeSave method
-     *
-     * It is called before the Model saves the data,
-     * it hashes the password for security reasons.
-     *
-     * @return void
-     */
-    public function beforeSave($options = array()) {
-        $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
-		$this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
-        return true;
-    }
+     * beforeSave callback
+     *
+     * We use this callback to save the password using Phpass and to create the
+     * unique hash of the User
+     *
+     * @return bool
+     */
+    function beforeSave($options = array()) {
+		if (isset($this->data['User']['password'])) {
+			$this->data['User']['password'] = PhpassFormAuthenticate::hash($this->data['User']['password']);
+		}
+		if(isset($this->data['User']['username'])) {
+			$this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
+		}
+		return true;
+	}
 
     /**
      * parentNode method

@@ -1,20 +1,17 @@
 <?php
-App::uses('AppController', 'Controller');
+App::uses('AuthBootstrapAppController', 'AuthBootstrap.Controller');
 /**
  * Users Controller
  *
  * @property User $User
  */
-class UsersController extends AppController {
+class UsersController extends AuthBootstrapAppController {
 
     /**
      * Models
      *
      * @var array
      */
-    public $uses = array(
-        'User',
-    );
 
     /**
      * Components
@@ -63,8 +60,10 @@ class UsersController extends AppController {
      * beforeFilter
      */
     public function beforeFilter() {
+    	//debug($this->Session->read('Auth'));
+    	
 		parent::beforeFilter();
-		$this->Auth->allow('login','admin_add');
+		$this->Auth->allow('admin_login','login','admin_add');
 	}
 
     /**
@@ -97,7 +96,37 @@ class UsersController extends AppController {
         if (!$this->User->exists()) {
             throw new NotFoundException(__('Invalid admin'));
         }
-        $this->set('user', $this->User->read(null, $id));
+        $this->set('admin', $this->User->read(null, $id));
+    }
+
+    /**
+     * changepassword method
+     *
+     * @return void
+     */
+    public function admin_changepassword() {
+    	$password = $this->User->find('all');
+			debug($password);
+        if ($this->request->is('post')) {
+        	debug($this->data);
+			
+			
+			if (false) {
+				if($this->data['Admin']['new_password'] === $this->data['Admin']['repeat_password']){
+					if ($this->Session->read('Auth.User.is_active')) {
+	                    $this->redirect($this->Auth->redirect());
+	                } else {
+	                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
+	                    $this->redirect($this->Auth->logout());
+	                }
+				}
+				else{
+					$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
+				}
+			} else {
+				$this->Session->setFlash(__('Your password was incorrect.'),'Flash/error');
+			}
+		}
     }
 
 	/**
@@ -122,7 +151,7 @@ class UsersController extends AppController {
      * @return void
      */
 	public function admin_view($id = null) {
-        $this->User->recursive = 2;
+		$this->User->recursive = 2;
 		$this->User->id = $id;
 		if (!$this->User->exists()) {
 			throw new NotFoundException(__('Invalid user'));

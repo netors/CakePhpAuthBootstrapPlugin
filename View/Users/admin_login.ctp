@@ -1,5 +1,5 @@
-<div class="page-header">
-    <h1><?php echo __('Log In'); ?> <small><?php echo __(''); ?></small></h1>
+<div class="page-header offset1">
+    <h1><?php echo __('Log In??'); ?> <small><?php echo __('!!'); ?></small></h1>
 </div>
 <div class="row">
     <div class="span12">
