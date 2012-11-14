@@ -1,12 +1,14 @@
 <?php
-App::uses('AppModel', 'Model');
+App::uses('AuthBootstrapAppModel', 'AuthBootstrap.Model');
+App::uses('PasswordHash', 'Vendor');
+App::uses('PhpassFormAuthenticate', 'Controller/Component/Auth');
 App::uses('AuthComponent', 'Controller/Component');
 /**
  * User Model
  *
  * @property Role $Role
  */
-class User extends AppModel {
+class User extends AuthBootstrapAppModel {
 
     /**
      * Model Behaviors
