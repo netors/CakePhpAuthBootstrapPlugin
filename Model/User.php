@@ -144,22 +144,19 @@ class User extends AuthBootstrapAppModel {
 	);
 
     /**
-     * beforeSave callback
-     *
-     * We use this callback to save the password using Phpass and to create the
-     * unique hash of the User
-     *
-     * @return bool
-     */
-    function beforeSave($options = array()) {
-		if (isset($this->data['User']['password'])) {
-			$this->data['User']['password'] = PhpassFormAuthenticate::hash($this->data['User']['password']);
-		}
-		if(isset($this->data['User']['username'])) {
-			$this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
-		}
-		return true;
-	}
+     * beforeSave method
+     *
+     * It is called before the Model saves the data,
+     * it hashes the password for security reasons.
+     *
+     * @return void
+     */
+    public function beforeSave($options = array()) {
+    	die('plugin!!');
+        $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
+		$this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
+        return true;
+    }
 
     /**
      * parentNode method

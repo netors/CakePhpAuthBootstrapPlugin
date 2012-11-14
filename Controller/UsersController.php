@@ -18,7 +18,7 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @var array
      */
-    public $components = array('Filter.Filter');
+    public $components = array('Filter.Filter','Email');
 
     /**
      * Helpers
@@ -63,7 +63,7 @@ class UsersController extends AuthBootstrapAppController {
     	//debug($this->Session->read('Auth'));
     	
 		parent::beforeFilter();
-		$this->Auth->allow('admin_login','login','admin_add');
+		$this->Auth->allow('admin_login','login','logout','admin_add','forget_password','reset_password');
 	}
 
     /**
@@ -278,38 +278,132 @@ class UsersController extends AuthBootstrapAppController {
 		$this->redirect($this->Auth->logout());
 	}
 
-    /**
-     * admin_change_password method
+	/**
+     * logout method
      *
      * @return void
      */
-    public function admin_change_password() {
+	public function logout() {
+		$this->Session->setFlash(__('Good bye!'),'Flash/info');
+		$this->redirect($this->Auth->logout());
+	}
+	
+	/**
+     * admin_forget_password method
+     *
+     * @return void
+     */
+	public function forget_password() {
+		if($this->Session->read('Auth')){
+			$this->Session->setFlash(__('You have already login!'),'Flash/error');
+			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
+		}
+		if ($this->request->is('post')) {
+			$this->User->recursive = -1;
+			$conditions = array('User.email'=>$this->data['User']['email']);
+			$result = $this->User->find('first',compact('conditions'));
+			if(!$result) {
+				$this->Session->setFlash(__('The email is not existed. Please try again'),'Flash/error');
+				return;
+			}
+			$new_password_key = Security::hash(time(),'md5');
+			$this->User->updateAll(
+					array('new_password_requested'=>'NOW()',
+						  'new_password_key'	  =>'"'.$new_password_key.'"'
+						  ), array('User.id'=>$result['User']['id']));
+			$email = new CakeEmail('smtp');
+			$email->to($result['User']['email']);
+	        $email->subject(__('Forgot Password from Locbit'));
+	        $email->template('users/forget_password', 'default');
+	        $email->helpers('Time','Html');
+			$email->theme('locbit');
+	        $email->viewVars(
+	            array(
+	                'title'	 		=> 'Forgot Password from Locbit',
+	                'userhash'		=> $result['User']['hash'],
+	                'password_key'	=> $new_password_key
+	            )
+	        );
+	        $email->send();
+			$this->Session->setFlash(__('The email has been sent'),'Flash/success');
+			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
+		}
+	}
+
+	/**
+     * reset_password method
+     *
+     * @return void
+     */
+	public function reset_password($userhash,$password_key) {
+		$this->User->recursive = -1;
+		if($this->Session->read('Auth')){
+			$this->Session->setFlash(__('You have already login!'),'Flash/error');
+			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
+		}
+		$conditions = array('User.hash'=>$userhash,'User.new_password_key'=>$password_key,'NOW() - User.new_password_requested <='=>Configure::read('Email.expiration_time'));
+		$result = $this->User->find('first',compact('conditions'));
+		if(!$result) {
+			$this->Session->setFlash(__('The link is not valid or expired. Please make sure the URL is correct.'),'Flash/error');
+			return;
+		}
+		if ($this->request->is('post')) {
+			$this->User->recursive = -1;
+			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']){
+				if ($result['User']['is_active']) {
+					$this->User->id = $result['User']['id'];
+					$data = array(
+							'User' => array(
+								'password'				=> $this->data['User']['new_password'],
+								'new_password_key'		=> NULL,
+								'new_password_requested'=> NULL,
+							));
+					if($this->User->save($data)){
+						$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
+						$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
+					}else{
+						$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
+					}
+                } else {
+                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
+                    $this->redirect($this->Auth->logout());
+                }
+			}
+			else{
+				$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
+			}
+		}
+	}
+
+    /**
+     * change_password method
+     *
+     * @return void
+     */
+    public function change_password() {
         // @todo: to be implemented
-        // @todo: ask for current password and new password twice
+        // @todo: ask for new password twice
         if ($this->request->is('post')) {
 			$this->User->recursive = -1;
-    		$password = $this->User->find('first',array('conditions'=>array('User.id'=>$this->Session->read('Auth.User.id'))));
-			if (PhpassFormAuthenticate::CheckPassword($this->data['Admin']['current_password'],$password['User']['password'])) {
-				if($this->data['Admin']['new_password'] === $this->data['Admin']['repeat_password']){
-					if ($this->Session->read('Auth.User.is_active')) {
-						$this->User->read(null, $this->Session->read('Auth.User.id'));
-						$this->User->set('password', $this->data['Admin']['new_password']);
-						
-						if($this->User->save()){
-							$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
-						}else{
-							$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
-						}
-	                } else {
-	                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
-	                    $this->redirect($this->Auth->logout());
-	                }
-				}
-				else{
-					$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
-				}
-			} else {
-				$this->Session->setFlash(__('Your password was incorrect.'),'Flash/error');
+			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']){
+				if ($this->Session->read('Auth.User.is_active')) {
+					$this->User->id = $this->Session->read('Auth.User.id');
+					$data = array(
+							'User' => array(
+								'password'	=> $this->data['User']['new_password'],
+							));
+					if($this->User->save($data)){
+						$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
+					}else{
+						$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
+					}
+                } else {
+                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
+                    $this->redirect($this->Auth->logout());
+                }
+			}
+			else{
+				$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
 			}
 		}
     }
