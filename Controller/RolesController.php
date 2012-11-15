@@ -1,11 +1,11 @@
 <?php
-App::uses('AppController', 'Controller');
+App::uses('AuthBootstrapAppController', 'AuthBootstrap.Controller');
 /**
  * Roles Controller
  *
  * @property Role $Role
  */
-class RolesController extends AppController {
+class RolesController extends AuthBootstrapAppController {
 
 
     function beforeFilter() {
