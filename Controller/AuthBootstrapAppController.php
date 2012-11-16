@@ -6,4 +6,23 @@ App::uses('AppController', 'Controller');
  * @property AuthBootstrap $AuthBootstrap
  */
 class AuthBootstrapAppController extends AppController {
+
+    /**
+     * Components
+     *
+     * @var array
+     */
+    public $components = array(
+        'Acl',
+        'Auth' => array(
+            'authorize' => array(
+                'Actions' => array(
+                    'userModel' => 'User',
+                    'actionPath' => 'controllers'
+                )
+            ),
+        ),
+        'RequestHandler',
+        'Session',
+    );
 }
