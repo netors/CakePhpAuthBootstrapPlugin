@@ -22,3 +22,7 @@ CREATE TABLE `users` (
   KEY `FK_users_roles` (`role_id`),
   CONSTRAINT `FK_users_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `roles` (`id`,`name`) VALUES (1,'MASTER');
+INSERT INTO `roles` (`id`,`name`) VALUES (2,'ADMIN');
+INSERT INTO `roles` (`id`,`name`) VALUES (3,'USER');
