@@ -6,10 +6,4 @@ App::uses('AppController', 'Controller');
  * @property AuthBootstrap $AuthBootstrap
  */
 class AuthBootstrapAppController extends AppController {
-
-	public function beforeFilter() {
-		parent::beforeFilter();
-	}
 }
-
-?>

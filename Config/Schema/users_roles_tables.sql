@@ -13,6 +13,8 @@ CREATE TABLE `users` (
   `lastname` varchar(255) CHARACTER SET latin1 NOT NULL DEFAULT '',
   `username` varchar(45) CHARACTER SET latin1 NOT NULL,
   `password` varchar(45) CHARACTER SET latin1 NOT NULL,
+  `new_password_requested` datetime DEFAULT NULL,
+  `new_password_hash` varchar(255) DEFAULT NULL,
   `email` varchar(45) CHARACTER SET latin1 NOT NULL,
   `is_active` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `is_confirmed` tinyint(1) unsigned NOT NULL DEFAULT '0',

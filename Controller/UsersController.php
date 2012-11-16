@@ -8,12 +8,6 @@ App::uses('AuthBootstrapAppController', 'AuthBootstrap.Controller');
 class UsersController extends AuthBootstrapAppController {
 
     /**
-     * Models
-     *
-     * @var array
-     */
-
-    /**
      * Components
      *
      * @var array
@@ -60,10 +54,8 @@ class UsersController extends AuthBootstrapAppController {
      * beforeFilter
      */
     public function beforeFilter() {
-    	//debug($this->Session->read('Auth'));
-    	
 		parent::beforeFilter();
-		$this->Auth->allow('admin_login','login','logout','admin_add','forget_password','reset_password');
+		$this->Auth->allow('login','forget_password');
 	}
 
     /**
@@ -200,6 +192,7 @@ class UsersController extends AuthBootstrapAppController {
 		$this->redirect(array('action' => 'index'));
 	}
      */
+
     /**
      * admin_deactivate method
      *
@@ -245,11 +238,11 @@ class UsersController extends AuthBootstrapAppController {
 	}
 
 	/**
-	 * admin_login method
+	 * login method
 	 *
 	 * @return void
 	 */
-	public function admin_login() {
+	public function login() {
 		if ($this->Session->read('Auth.User')) {
 			$this->Session->setFlash(__('You are logged in!'),'Flash/info');
 			$this->redirect('/', null, false);
@@ -279,24 +272,14 @@ class UsersController extends AuthBootstrapAppController {
 	}
 
 	/**
-     * logout method
+     * admin_forgot_password method
      *
      * @return void
      */
-	public function logout() {
-		$this->Session->setFlash(__('Good bye!'),'Flash/info');
-		$this->redirect($this->Auth->logout());
-	}
-	
-	/**
-     * admin_forget_password method
-     *
-     * @return void
-     */
-	public function forget_password() {
-		if($this->Session->read('Auth')){
-			$this->Session->setFlash(__('You have already login!'),'Flash/error');
-			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
+	public function forgot_password() {
+		if ($this->Session->read('Auth')){
+			$this->Session->setFlash(__('You are logged in!'),'Flash/info');
+			$this->redirect($this->referer());
 		}
 		if ($this->request->is('post')) {
 			$this->User->recursive = -1;
@@ -307,14 +290,16 @@ class UsersController extends AuthBootstrapAppController {
 				return;
 			}
 			$new_password_key = Security::hash(time(),'md5');
+            $data = array(
+                'new_password_requested' => 'NOW()',
+                'new_password_key' =>'"'.$new_password_key.'"'
+            );
 			$this->User->updateAll(
-					array('new_password_requested'=>'NOW()',
-						  'new_password_key'	  =>'"'.$new_password_key.'"'
-						  ), array('User.id'=>$result['User']['id']));
+					, array('User.id'=>$result['User']['id']));
 			$email = new CakeEmail('smtp');
 			$email->to($result['User']['email']);
-	        $email->subject(__('Forgot Password from Locbit'));
-	        $email->template('users/forget_password', 'default');
+	        $email->subject(__('Reset password from Locbit'));
+	        $email->template('Users/forgot_password', 'default');
 	        $email->helpers('Time','Html');
 			$email->theme('locbit');
 	        $email->viewVars(
