@@ -1,7 +1,5 @@
 <?php
 App::uses('AuthBootstrapAppModel', 'AuthBootstrap.Model');
-App::uses('PasswordHash', 'Vendor');
-App::uses('PhpassFormAuthenticate', 'Controller/Component/Auth');
 App::uses('AuthComponent', 'Controller/Component');
 /**
  * User Model

@@ -5,7 +5,7 @@ App::uses('AppModel', 'Model');
  *
  * @property User $User
  */
-class Role extends AppModel {
+class Role extends AuthBootstrapAppModel {
 
     /**
      * Model Behaviors
