@@ -41,4 +41,6 @@ class AuthBootstrapAppController extends AppController {
         'TwitterBootstrap.BootstrapForm',
         'TwitterBootstrap.BootstrapHtml',
         'TwitterBootstrap.BootstrapPaginator',
-    );}
+    );
+
+}
