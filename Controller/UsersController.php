@@ -55,7 +55,7 @@ class UsersController extends AuthBootstrapAppController {
      */
     public function beforeFilter() {
 		parent::beforeFilter();
-		$this->Auth->allow('login','forget_password');
+		$this->Auth->allow('login','forget_password','admin_add');
 	}
 
     /**

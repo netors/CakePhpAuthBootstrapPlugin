@@ -25,4 +25,20 @@ class AuthBootstrapAppController extends AppController {
         'RequestHandler',
         'Session',
     );
-}
+
+    /**
+     * Helpers
+     *
+     * @var array
+     */
+    public $helpers = array(
+        'Html',
+        'Form',
+        'Time',
+        'Number',
+        'TwitterBootstrapCakeBake.BootstrapIcon',
+        'Session',
+        'TwitterBootstrap.BootstrapForm',
+        'TwitterBootstrap.BootstrapHtml',
+        'TwitterBootstrap.BootstrapPaginator',
+    );}
