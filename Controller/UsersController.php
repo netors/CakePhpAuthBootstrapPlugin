@@ -55,7 +55,7 @@ class UsersController extends AuthBootstrapAppController {
      */
     public function beforeFilter() {
 		parent::beforeFilter();
-		$this->Auth->allow('login','forget_password','admin_add');
+		$this->Auth->allow('login','forgot_password');
 	}
 
     /**
@@ -156,6 +156,12 @@ class UsersController extends AuthBootstrapAppController {
 		if (!$this->User->exists()) {
 			throw new NotFoundException(__('Invalid user'));
 		}
+        $conditions = array('User.id' => $id);
+        $user = $this->User->find('first',compact('conditions'));
+        if ($this->Session->read('Auth.User.user_id')!=Configure::read('Role.master')&&$user['User']['role_id']==Configure::read('Role.master')) {
+            $this->Session->setFlash(__('You are not authorized to edit this user.'),'Flash/error');
+            $this->redirect(array('action' => 'index'));
+        }
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->User->save($this->request->data)) {
 				$this->Session->setFlash(__('The user has been saved'),'Flash/success');
@@ -164,7 +170,8 @@ class UsersController extends AuthBootstrapAppController {
 				$this->Session->setFlash(__('The user could not be saved. Please, try again.'),'Flash/error');
 			}
 		} else {
-			$this->request->data = $this->User->read(null, $id);
+            unset($user['User']['password']);
+			$this->request->data = $user;
 		}
         $roles = $this->User->Role->find('list',array('conditions'=>array('id !='=>Configure::read('Role.master'))));
         $this->set(compact('roles'));
