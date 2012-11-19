@@ -63,7 +63,7 @@ class UsersController extends AuthBootstrapAppController {
     	//debug($this->Session->read('Auth'));
     	
 		parent::beforeFilter();
-		$this->Auth->allow('admin_login','login','logout','admin_add','forget_password','reset_password');
+		$this->Auth->allow('admin_login','login','logout','forget_password','reset_password');
 	}
 
     /**
@@ -71,17 +71,17 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @return void
      */
-    public function admin_home()  {
-        switch ($this->Session->read('Auth.User.role_id')) {
-            case Configure::read('Role.master'):
-                break;
-            case Configure::read('Role.admin'):
-            case Configure::read('Role.user'):
-                break;
-            default:
-                $this->redirect(array('action'=>'login'));
-                throw new MethodNotAllowedException();
-                break;
+    public function admin_home() {
+		switch ($this->Session->read('Auth.User.role_id')) {
+			case Configure::read('Role.master'):
+				break;
+			case Configure::read('Role.admin'):
+			case Configure::read('Role.user'):
+				break;
+			default:
+				$this->redirect(array('action'=>'login'));
+				throw new MethodNotAllowedException();
+				break;
         }
     }
 
@@ -90,7 +90,7 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @return void
      */
-    public function admin_profile()  {
+    public function admin_profile() {
         $id = $this->Session->read('Auth.User.id');
         $this->User->id = $id;
         if (!$this->User->exists()) {
@@ -294,15 +294,15 @@ class UsersController extends AuthBootstrapAppController {
      * @return void
      */
 	public function forget_password() {
-		if($this->Session->read('Auth')){
+		if($this->Session->read('Auth')) {
 			$this->Session->setFlash(__('You have already login!'),'Flash/error');
 			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
 		}
 		if ($this->request->is('post')) {
 			$this->User->recursive = -1;
 			$conditions = array('User.email'=>$this->data['User']['email']);
-			$result = $this->User->find('first',compact('conditions'));
-			if(!$result) {
+			$user = $this->User->find('first',compact('conditions'));
+			if(!$user) {
 				$this->Session->setFlash(__('The email is not existed. Please try again'),'Flash/error');
 				return;
 			}
@@ -310,20 +310,21 @@ class UsersController extends AuthBootstrapAppController {
 			$this->User->updateAll(
 					array('new_password_requested'=>'NOW()',
 						  'new_password_key'	  =>'"'.$new_password_key.'"'
-						  ), array('User.id'=>$result['User']['id']));
+						  ), array('User.id'=>$user['User']['id']));
 			$email = new CakeEmail('smtp');
-			$email->to($result['User']['email']);
-	        $email->subject(__('Forgot Password from Locbit'));
-	        $email->template('users/forget_password', 'default');
-	        $email->helpers('Time','Html');
-			$email->theme('locbit');
-	        $email->viewVars(
+			$email->to($user['User']['email']);
+			$email->subject(__('Forgot Password from '.Configure::read('App.name')));
+			$email->template('Users/forget_password', 'default');
+			$email->helpers('Time','Html');
+			if (strlen($this->theme)) {
+				$email->theme($this->theme);
+			}
+			$email->viewVars(
 	            array(
-	                'title'	 		=> 'Forgot Password from Locbit',
-	                'userhash'		=> $result['User']['hash'],
-	                'password_key'	=> $new_password_key
-	            )
-	        );
+					'title'	 		=> 'Forgot Password from '.Configure::read('App.name'),
+					'user'			=> $user
+				)
+			);
 	        $email->send();
 			$this->Session->setFlash(__('The email has been sent'),'Flash/success');
 			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
@@ -337,74 +338,69 @@ class UsersController extends AuthBootstrapAppController {
      */
 	public function reset_password($userhash,$password_key) {
 		$this->User->recursive = -1;
-		if($this->Session->read('Auth')){
+		if($this->Session->read('Auth')) {
 			$this->Session->setFlash(__('You have already login!'),'Flash/error');
 			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
 		}
 		$conditions = array('User.hash'=>$userhash,'User.new_password_key'=>$password_key,'NOW() - User.new_password_requested <='=>Configure::read('Email.expiration_time'));
-		$result = $this->User->find('first',compact('conditions'));
-		if(!$result) {
+		$user = $this->User->find('first',compact('conditions'));
+		if(!$user) {
 			$this->Session->setFlash(__('The link is not valid or expired. Please make sure the URL is correct.'),'Flash/error');
 			return;
 		}
 		if ($this->request->is('post')) {
 			$this->User->recursive = -1;
-			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']){
-				if ($result['User']['is_active']) {
-					$this->User->id = $result['User']['id'];
+			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']) {
+				if ($user['User']['is_active']) {
+					$this->User->id = $user['User']['id'];
 					$data = array(
 							'User' => array(
 								'password'				=> $this->data['User']['new_password'],
 								'new_password_key'		=> NULL,
 								'new_password_requested'=> NULL,
 							));
-					if($this->User->save($data)){
+					if($this->User->save($data)) {
 						$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
 						$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
-					}else{
+					} else {
 						$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
 					}
-                } else {
-                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
-                    $this->redirect($this->Auth->logout());
-                }
+				} else {
+				    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
+				    $this->redirect($this->Auth->logout());
+				}
 			}
-			else{
+			else {
 				$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
 			}
 		}
 	}
 
     /**
-     * change_password method
+     * admin_change_password method
      *
      * @return void
      */
-    public function change_password() {
-        // @todo: to be implemented
-        // @todo: ask for new password twice
-        if ($this->request->is('post')) {
+    public function admin_change_password() {
+		// @todo: to be implemented
+		// @todo: ask for new password twice
+		if ($this->request->is('post')) {
 			$this->User->recursive = -1;
 			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']){
-				if ($this->Session->read('Auth.User.is_active')) {
-					$this->User->id = $this->Session->read('Auth.User.id');
-					$data = array(
-							'User' => array(
-								'password'	=> $this->data['User']['new_password'],
-							));
-					if($this->User->save($data)){
-						$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
-					}else{
-						$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
-					}
-                } else {
-                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
-                    $this->redirect($this->Auth->logout());
-                }
+				$this->User->id = $this->Session->read('Auth.User.id');
+				$data = array(
+						'User' => array(
+							'password'	=> $this->data['User']['new_password'],
+						));
+				if($this->User->save($data)) {
+					$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
+				} else {
+					$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
+				}
 			}
-			else{
+			else {
 				$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
 			}
 		}
-    }
+	}
 }
