@@ -13,6 +13,8 @@ CREATE TABLE `users` (
   `lastname` varchar(255) CHARACTER SET latin1 NOT NULL DEFAULT '',
   `username` varchar(45) CHARACTER SET latin1 NOT NULL,
   `password` varchar(45) CHARACTER SET latin1 NOT NULL,
+  `new_password_requested` datetime DEFAULT NULL,
+  `new_password_hash` varchar(255) DEFAULT NULL,
   `email` varchar(45) CHARACTER SET latin1 NOT NULL,
   `is_active` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `is_confirmed` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -22,3 +24,7 @@ CREATE TABLE `users` (
   KEY `FK_users_roles` (`role_id`),
   CONSTRAINT `FK_users_roles` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `roles` (`id`,`name`) VALUES (1,'MASTER');
+INSERT INTO `roles` (`id`,`name`) VALUES (2,'ADMIN');
+INSERT INTO `roles` (`id`,`name`) VALUES (3,'USER');

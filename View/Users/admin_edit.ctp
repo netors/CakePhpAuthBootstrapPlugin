@@ -3,7 +3,7 @@
 </div>
 <div class="row">
 	<div class="span12">
-		<?php echo $this->BootstrapForm->create('User',array('class'=>'form-horizontal'));?>
+		<?php echo $this->BootstrapForm->create('User',array('class'=>'form-horizontal','type'=>'file'));?>
         <div class="span12">
             <?php echo $this->BootstrapForm->create('User',array('class'=>'form-horizontal'));?>
             <fieldset>

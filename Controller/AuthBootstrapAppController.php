@@ -7,9 +7,40 @@ App::uses('AppController', 'Controller');
  */
 class AuthBootstrapAppController extends AppController {
 
-	public function beforeFilter() {
-		parent::beforeFilter();
-	}
-}
+    /**
+     * Components
+     *
+     * @var array
+     */
+    public $components = array(
+        'Acl',
+        'Auth' => array(
+            'authorize' => array(
+                'Actions' => array(
+                    'userModel' => 'User',
+                    'actionPath' => 'controllers'
+                )
+            ),
+        ),
+        'RequestHandler',
+        'Session',
+    );
 
-?>
+    /**
+     * Helpers
+     *
+     * @var array
+     */
+    public $helpers = array(
+        'Html',
+        'Form',
+        'Time',
+        'Number',
+        'TwitterBootstrapCakeBake.BootstrapIcon',
+        'Session',
+        'TwitterBootstrap.BootstrapForm',
+        'TwitterBootstrap.BootstrapHtml',
+        'TwitterBootstrap.BootstrapPaginator',
+    );
+
+}
