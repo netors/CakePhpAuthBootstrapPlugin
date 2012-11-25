@@ -86,9 +86,11 @@ class UsersController extends AuthBootstrapAppController {
         $id = $this->Session->read('Auth.User.id');
         $this->User->id = $id;
         if (!$this->User->exists()) {
-            throw new NotFoundException(__('Invalid admin'));
+            throw new NotFoundException(__('Invalid user'));
         }
-        $this->set('admin', $this->User->read(null, $id));
+        $conditions = array('User.id'=>$id);
+        $user = $this->User->find('first',compact('conditions'));
+        $this->set(compact('user'));
     }
 
 	/**
@@ -291,7 +293,7 @@ class UsersController extends AuthBootstrapAppController {
 
 		if ($this->request->is('post')) {
 			$this->User->recursive = -1;
-			$conditions = array('User.email'=>$this->data['User']['email']);
+			$conditions = array('User.email'=>$this->request->data['User']['email']);
 			$user = $this->User->find('first',compact('conditions'));
 			if (!empty($user)) {
                 $data = array(
@@ -302,7 +304,7 @@ class UsersController extends AuthBootstrapAppController {
                 $this->User->updateAll($data, $condition);
 
                 //$this->User->recursive = -1;
-                //$conditions = array('User.email'=>$this->data['User']['email']);
+                //$conditions = array('User.email'=>$this->request->data['User']['email']);
                 $user = $this->User->find('first',compact('conditions'));
 
                 $email = new CakeEmail('smtp');
@@ -341,12 +343,12 @@ class UsersController extends AuthBootstrapAppController {
 		if (!empty($user)) {
             if ($this->request->is('post')) {
                 $this->User->recursive = -1;
-                if ($this->data['User']['new_password'] === $this->data['User']['repeat_password']) {
+                if ($this->request->data['User']['new_password'] === $this->request->data['User']['repeat_password']) {
                     if ($user['User']['is_active']) {
                         $this->User->id = $user['User']['id'];
                         $data = array(
                                 'User' => array(
-                                    'password'				=> $this->data['User']['new_password'],
+                                    'password'				=> $this->request->data['User']['new_password'],
                                     'new_password_key'		=> null,
                                     'new_password_requested'=> null,
                                 )
@@ -373,35 +375,47 @@ class UsersController extends AuthBootstrapAppController {
 	}
 
     /**
-     * change_password method
+     * admin_change_password method
      *
      * @return void
      */
-    public function change_password() {
-        // @todo: to be implemented
-        // @todo: ask for new password twice
+    public function admin_change_password() {
+        $id = $this->Session->read('Auth.User.id');
+        $this->User->id = $id;
+        if (!$this->User->exists()) {
+            throw new NotFoundException(__('Invalid user'));
+        }
+
         if ($this->request->is('post')) {
-			$this->User->recursive = -1;
-			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']){
-				if ($this->Session->read('Auth.User.is_active')) {
-					$this->User->id = $this->Session->read('Auth.User.id');
-					$data = array(
-							'User' => array(
-								'password'	=> $this->data['User']['new_password'],
-							));
-					if($this->User->save($data)){
-						$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
-					}else{
-						$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
-					}
+            $conditions = array(
+                'User.id' => $id,
+                'User.password' => Security::hash($this->request->data['User']['current_password'], 'sha1', true)
+            );
+            $this->User->recursive = -1;
+            $user = $this->User->find('first',compact('conditions'));
+
+            if (!empty($user)) {
+                if ($this->request->data['User']['new_password'] === $this->request->data['User']['repeat_password']) {
+                    $this->User->id = $id;
+                    $data = array(
+                        'User' => array(
+                            'password'	=> $this->request->data['User']['new_password'],
+                        ));
+                    if ($this->User->save($data)) {
+                        $this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
+                        $this->redirect(array('action'=>'profile','admin'=>true));
+                    } else {
+                        $this->Session->setFlash(__('Password was not saved. Please, try again.'),'Flash/error');
+                    }
                 } else {
-                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
-                    $this->redirect($this->Auth->logout());
+                    $this->Session->setFlash(__('New and repeat password do not match.'),'Flash/error');
                 }
-			}
-			else{
-				$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
-			}
-		}
+            } else {
+                $this->Session->setFlash(__('Current password does not match.'),'Flash/error');
+            }
+        }
+        $conditions = array('User.id' => $id);
+        $user = $this->User->find('first',compact('conditions'));
+        $this->set(compact('user'));
     }
 }

@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var $this View
+ */
+?>
 <div class="page-header offset1">
     <h1><?php echo __('Log In??'); ?> <small><?php echo __('!!'); ?></small></h1>
 </div>
