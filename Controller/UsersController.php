@@ -55,7 +55,7 @@ class UsersController extends AuthBootstrapAppController {
      */
     public function beforeFilter() {
 		parent::beforeFilter();
-		$this->Auth->allow('login','forget_password','admin_add');
+		$this->Auth->allow('login','forget_password','admin_add','register');
 	}
 
     /**
@@ -142,6 +142,24 @@ class UsersController extends AuthBootstrapAppController {
         }
 		$roles = $this->User->Role->find('list',array('conditions'=>array('id !='=>Configure::read('Role.master'))));
 		$this->set(compact('roles'));
+	}
+
+	/**
+	 * register method
+	 *
+	 * @return void
+	 */
+	public function register() {
+		if ($this->request->is('post')) {
+			$this->request->data['User']['role_id'] = Configure::read('Role.user');
+            $this->User->create();
+			if ($this->User->save($this->request->data)) {
+				$this->Session->setFlash(__('The user has been saved'),'Flash/success');
+				$this->redirect(array('plugin'=>null,'controller'=>'pages', 'action' => 'home'));
+			} else {
+				$this->Session->setFlash(__('The user could not be saved. Please, try again.'),'Flash/error');
+			}
+		}
 	}
 
 
