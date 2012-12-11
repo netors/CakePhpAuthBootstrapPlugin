@@ -55,7 +55,7 @@ class UsersController extends AuthBootstrapAppController {
      */
     public function beforeFilter() {
 		parent::beforeFilter();
-		$this->Auth->allow('login','forget_password','admin_add','register');
+		$this->Auth->allow('admin_login','login','logout','forget_password','reset_password','register');
 	}
 
     /**
@@ -63,17 +63,17 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @return void
      */
-    public function admin_home()  {
-        switch ($this->Session->read('Auth.User.role_id')) {
-            case Configure::read('Role.master'):
-                break;
-            case Configure::read('Role.admin'):
-            case Configure::read('Role.user'):
-                break;
-            default:
-                $this->redirect(array('action'=>'login'));
-                throw new MethodNotAllowedException();
-                break;
+    public function admin_home() {
+		switch ($this->Session->read('Auth.User.role_id')) {
+			case Configure::read('Role.master'):
+				break;
+			case Configure::read('Role.admin'):
+			case Configure::read('Role.user'):
+				break;
+			default:
+				$this->redirect(array('action'=>'login'));
+				throw new MethodNotAllowedException();
+				break;
         }
     }
 
@@ -82,7 +82,7 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @return void
      */
-    public function admin_profile()  {
+    public function admin_profile() {
         $id = $this->Session->read('Auth.User.id');
         $this->User->id = $id;
         if (!$this->User->exists()) {
@@ -174,6 +174,12 @@ class UsersController extends AuthBootstrapAppController {
 		if (!$this->User->exists()) {
 			throw new NotFoundException(__('Invalid user'));
 		}
+        $conditions = array('User.id' => $id);
+        $user = $this->User->find('first',compact('conditions'));
+        if ($this->Session->read('Auth.User.user_id')!=Configure::read('Role.master')&&$user['User']['role_id']==Configure::read('Role.master')) {
+            $this->Session->setFlash(__('You are not authorized to edit this user.'),'Flash/error');
+            $this->redirect(array('action' => 'index'));
+        }
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->User->save($this->request->data)) {
 				$this->Session->setFlash(__('The user has been saved'),'Flash/success');
@@ -182,7 +188,8 @@ class UsersController extends AuthBootstrapAppController {
 				$this->Session->setFlash(__('The user could not be saved. Please, try again.'),'Flash/error');
 			}
 		} else {
-			$this->request->data = $this->User->read(null, $id);
+            unset($user['User']['password']);
+			$this->request->data = $user;
 		}
         $roles = $this->User->Role->find('list',array('conditions'=>array('id !='=>Configure::read('Role.master'))));
         $this->set(compact('roles'));
@@ -304,6 +311,7 @@ class UsersController extends AuthBootstrapAppController {
 			$this->User->recursive = -1;
 			$conditions = array('User.email'=>$this->data['User']['email']);
 			$user = $this->User->find('first',compact('conditions'));
+
 			if (!empty($user)) {
                 $data = array(
                     'new_password_requested' => 'NOW()',
@@ -339,7 +347,7 @@ class UsersController extends AuthBootstrapAppController {
      */
 	public function reset_password($hash, $password_hash) {
 		$this->User->recursive = -1;
-		if($this->Session->read('Auth')){
+		if($this->Session->read('Auth')) {
 			$this->Session->setFlash(__('You have already login!'),'Flash/error');
 			$this->redirect(array('plugin'=>null,'controller'=>'pages','action'=>'home','admin'=>false));
 		}
@@ -384,35 +392,30 @@ class UsersController extends AuthBootstrapAppController {
 	}
 
     /**
-     * change_password method
+     * admin_change_password method
      *
      * @return void
      */
-    public function change_password() {
-        // @todo: to be implemented
-        // @todo: ask for new password twice
-        if ($this->request->is('post')) {
+    public function admin_change_password() {
+		// @todo: to be implemented
+		// @todo: ask for new password twice
+		if ($this->request->is('post')) {
 			$this->User->recursive = -1;
 			if($this->data['User']['new_password'] === $this->data['User']['repeat_password']){
-				if ($this->Session->read('Auth.User.is_active')) {
-					$this->User->id = $this->Session->read('Auth.User.id');
-					$data = array(
-							'User' => array(
-								'password'	=> $this->data['User']['new_password'],
-							));
-					if($this->User->save($data)){
-						$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
-					}else{
-						$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
-					}
-                } else {
-                    $this->Session->setFlash(__('This account is inactive. Contact your administrator.'),'Flash/error');
-                    $this->redirect($this->Auth->logout());
-                }
+				$this->User->id = $this->Session->read('Auth.User.id');
+				$data = array(
+						'User' => array(
+							'password'	=> $this->data['User']['new_password'],
+						));
+				if($this->User->save($data)) {
+					$this->Session->setFlash(__('New Password has been saved.'),'Flash/success');
+				} else {
+					$this->Session->setFlash(__('There is problem of saving password.'),'Flash/error');
+				}
 			}
-			else{
+			else {
 				$this->Session->setFlash(__('Make sure the repeat password is matched new password.'),'Flash/error');
 			}
 		}
-    }
+	}
 }

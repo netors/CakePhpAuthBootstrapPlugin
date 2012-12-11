@@ -150,8 +150,14 @@ class User extends AuthBootstrapAppModel {
      * @return void
      */
     public function beforeSave($options = array()) {
-        $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
-		$this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
+        if (!$this->id && !isset($this->data[$this->alias][$this->primaryKey])) {
+            $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
+            $this->data['User']['hash'] = Security::hash($this->data['User']['username'],'sha1',true);
+        } else {
+            if (isset($this->data['User']['password'])) {
+                $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
+            }
+        }
         return true;
     }
 
