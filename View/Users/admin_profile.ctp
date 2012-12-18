@@ -1,5 +1,10 @@
+<?php
+/**
+ * @var $this View
+ */
+?>
 <div class="page-header">
-  <h1><?php  echo __('My Account');?> <small><?php echo __('Profile');?></small></h1>
+    <h1><?php  echo __('My Account');?> <small><?php echo __('Profile');?></small></h1>
 </div>
 <div class="row">
     <div class="span12">

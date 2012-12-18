@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var $this View
+ */
+?>
 <div class="page-header">
 	<h1><?php echo __('Users');?> <small><?php echo __('Edit User'); ?></small></h1>
 </div>
