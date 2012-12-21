@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var $this View
+ */
+?>
 <div class="page-header">
 	<div class="btn-group pull-right">
         <?php echo $this->Html->link($this->BootstrapIcon->css('pencil').' '.__('Edit User'), array('action' => 'edit', $user['User']['id']), array('escape'=>false,'class'=>'btn btn-default btn-small')); ?>
