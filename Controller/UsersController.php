@@ -178,7 +178,8 @@ class UsersController extends AuthBootstrapAppController {
 		}
         $conditions = array('User.id' => $id);
         $user = $this->User->find('first',compact('conditions'));
-        if ($this->Session->read('Auth.User.user_id')!=Configure::read('Role.master')&&$user['User']['role_id']==Configure::read('Role.master')) {
+        if ($this->Session->read('Auth.User.role_id')!=Configure::read('Role.master')&&$this->request->data['User']['role_id']==Configure::read('Role.master')
+			|| ($this->Session->read('Auth.User.role_id') > Configure::read('Role.admin') && $this->Session->read('Auth.User.id') != $id)) {
             $this->Session->setFlash(__('You are not authorized to edit this user.'),'Flash/error');
             $this->redirect(array('action' => 'index'));
         }
