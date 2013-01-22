@@ -84,13 +84,17 @@ class UsersController extends AuthBootstrapAppController {
      */
     public function admin_profile() {
         $id = $this->Session->read('Auth.User.id');
-		$this->User->recursive = -1;
         $this->User->id = $id;
         if (!$this->User->exists()) {
             throw new NotFoundException(__('Invalid user'));
         }
-        $conditions = array('User.id'=>$id);
-        $user = $this->User->find('first',compact('conditions'));
+        $conditions = array(
+            'User.id' => $id
+        );
+        $contain = array(
+            'Role'
+        );
+        $user = $this->User->find('first',compact('contain','conditions'));
         $this->set(compact('user'));
     }
 
