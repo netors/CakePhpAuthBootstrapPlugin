@@ -12,43 +12,7 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @var array
      */
-    public $components = array('Filter.Filter','Email');
-
-    /**
-     * Helpers
-     *
-     * @var array
-     */
-    public $helpers = array('Filter.Filter');
-
-    /**
-     * Filters
-     *
-     * @var array
-     */
-    public $filters = array(
-		'admin_index' => array(
-			'User' => array(
-                'User.name' => array(
-                    'label' => 'Name'
-                ),
-                'User.lastname' => array(
-                    'label' => 'Lastname'
-                ),
-                'User.username' => array(
-                    'label' => 'Username'
-                ),
-                'User.email' => array(
-                    'label' => 'Email'
-                ),
-                'User.role_id' => array(
-                    'type' => 'select',
-                    'label' => 'Role',
-                    'selector' => 'getRoleList'
-                ),
-			)
-		),
-	);
+    public $components = array('Email');
 
     /**
      * beforeFilter

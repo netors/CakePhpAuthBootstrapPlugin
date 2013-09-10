@@ -9,9 +9,6 @@
 </div>
 <div class="row">
 	<div class="span12">
-		<p>
-			<?php echo $this->Filter->filterForm('User', array('legend' => '')); ?>
-		</p>
 		<table cellpadding="0" cellspacing="0" class="table table-striped">
 			<tr>
 				<th><?php echo $this->Paginator->sort('role_id');?></th>

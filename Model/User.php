@@ -196,14 +196,4 @@ class User extends AuthBootstrapAppModel {
         $this->virtualFields = array('full_name' => 'CONCAT('.$this->alias.'.`name`, " ", '.$this->alias.'.lastname)');
     }
 
-    /**
-     * getRoleList method
-     *
-     * List used by the Filter
-     *
-     * @return mixed
-     */
-    public function getRoleList() {
-        return $this->Role->find('list', array('order'=>array('name'=>'ASC')));
-    }
 }
