@@ -46,8 +46,8 @@ class UsersController extends AuthBootstrapAppController {
      *
      * @return void
      */
-    public function admin_profile() {
-        $id = $this->Session->read('Auth.User.id');
+    public function admin_profile()  {
+        $id = $this->Auth->user('id');
         $this->User->id = $id;
         if (!$this->User->exists()) {
             throw new NotFoundException(__('Invalid user'));
@@ -240,7 +240,7 @@ class UsersController extends AuthBootstrapAppController {
 	 * @return void
 	 */
 	public function admin_login() {
-		if ($this->Session->read('Auth.User')) {
+		if ($this->Auth->user()) {
 			$this->Session->setFlash(__('You are logged in!'),'Flash/info');
 			$this->redirect('/', null, false);
 		}
@@ -447,7 +447,7 @@ class UsersController extends AuthBootstrapAppController {
      * @return void
      */
     public function admin_change_password() {
-        $id = $this->Session->read('Auth.User.id');
+        $id = $this->Auth->user('id');
         $this->User->id = $id;
         if (!$this->User->exists()) {
             throw new NotFoundException(__('Invalid user'));
